@@ -7,6 +7,7 @@ import array
 from time import sleep
 import subprocess
 import shlex
+from qpid.messaging import *
 
 def pinger(iadr):
 # This pings the local interface
