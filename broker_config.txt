@@ -1,0 +1,3 @@
+[root@mrg2 agietst]# qpid-config --durable add queue agie_inbound_control
+[root@mrg2 agietst]# qpid-config --durable add queue agie_inbound_data
+
