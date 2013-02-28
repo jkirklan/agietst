@@ -13,9 +13,10 @@ def broker_conn():
                 lb_connection.open()
                 session = lb_connection.session()
 		receiver = session.receiver("agie_inbound_control")
-		message = receiver.fetch()
-		print message.content
-		session.acknowledge()
+		while True:
+			message = receiver.fetch()
+			print message.content
+			session.acknowledge()
         except MessagingError,m:
                 print m
         finally:

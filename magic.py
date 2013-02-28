@@ -74,6 +74,7 @@ def all_interfaces():
     return [(namestr[i:i+16].split('\0', 1)[0],
              socket.inet_ntoa(namestr[i+20:i+24]))
             for i in range(0, outbytes, struct_size)]
+
 #create broker connection and session
 lb_connection = Connection(broker_local)
 try:
@@ -82,8 +83,8 @@ try:
 	sender = session.sender(addr_control) 
 except MessagingError,m:
 	print m
-finally:
-	lb_connection.close()
+#finally:
+#	lb_connection.close()
 
 start_config = all_interfaces() #set initial value r start_config == to int on init
 del start_config[0] #remove loopback
@@ -106,3 +107,4 @@ while True:
 		
 		start_config = new_config
 		print "new config", start_config
+lb_connection.close()
