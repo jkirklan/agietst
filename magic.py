@@ -9,6 +9,22 @@ import subprocess
 import shlex
 from qpid.messaging import *
 
+#global vars
+broker_local = "localhost:5672"
+addr_control = "agie_inbound/agie_inbound_control"
+
+def broker_conn():
+# create connection to local broker
+	lb_connection = Connection(broker_local)
+	try:
+		lb_connection.open()
+		session = lb_connection.session()
+		sender = session.sender(addr_control) 
+	except MessagingError,m:
+		print m
+	finally:
+		lb_connection.close()
+
 def pinger(iadr):
 # This pings the local interface
         command_line = "ping -c 1 " + iadr
@@ -58,7 +74,7 @@ def all_interfaces():
              socket.inet_ntoa(namestr[i+20:i+24]))
             for i in range(0, outbytes, struct_size)]
 
-
+broker_conn()
 start_config = all_interfaces() #set initial value for start_config == to int on init`
 del start_config[0] #remove loopback
 for intf in start_config: 

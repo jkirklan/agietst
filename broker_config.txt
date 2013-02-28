@@ -1,3 +1,6 @@
 [root@mrg2 agietst]# qpid-config --durable add queue agie_inbound_control
 [root@mrg2 agietst]# qpid-config --durable add queue agie_inbound_data
-
+[root@mrg2 agietst]# qpid-config --durable add exchange direct agie_inbound -a
+localhost:5672
+[root@mrg2 agietst]# qpid-config bind agie_inbound agie_inbound_control
+agie_inbound_control
