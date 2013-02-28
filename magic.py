@@ -26,6 +26,13 @@ def pinger_b(iadr):
                 print "broker is there on ", iadr
         except:
                 print "Couldn't get a ping on ", iadr
+def add_intf(intf):
+        broker = "broker." + intf[0] + ".example.com"
+        intf_name = intf[0]
+        intf_ip = intf[1]
+        pinger(intf[1])
+        pinger_b(broker)
+        print "send message to avail brokers"	
 
 def all_interfaces():
 #This returns a list with all active network interfaces
@@ -51,16 +58,10 @@ def all_interfaces():
             for i in range(0, outbytes, struct_size)]
 
 
-
 start_config = all_interfaces() #set initial value for start_config == to int on init`
 del start_config[0] #remove loopback
 for intf in start_config: 
-	broker = "broker." + intf[0] + ".example.com"
-	intf_name = intf[0]
-        intf_ip = intf[1]
-        pinger(intf[1])
-	pinger_b(broker)
-	print "send message to avail brokers"
+	add_intf(intf)
 print start_config
 while True:
 	sleep(5)
@@ -74,11 +75,7 @@ while True:
 		diffy = [x for x in start_config if x not in iffy]
 		print "lost network", diffy
 		for intf in new_config:
-			intf_name = intf[0]
-			intf_ip = intf[1]
-			pinger(intf[1])
-			broker = "broker." + intf[0] + ".example.com"
-			pinger_b(broker)
+        		add_intf(intf)
 		
 		start_config = new_config
 		print "new config", start_config
