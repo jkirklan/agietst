@@ -7,9 +7,13 @@ broker_local = "localhost:5672"
 addr_control = "agie_inbound/agie_inbound_control"
 
 
-def intf_up(foo):
-	print ' '
+def intf_up(msg_list):
+	print msg_list
+	print 'Uppy '
 
+def intf_down(msg_list):
+        print msg_list
+        print 'Downer '
 
 
 def broker_conn():
@@ -23,11 +27,10 @@ def broker_conn():
 			message = receiver.fetch()
 			received = message.content
 			msg_list = received.split(',')	
-			print msg_list
 			if msg_list[0] == 'up':
-				print "Uppy"
+				intf_up(msg_list)
 			elif msg_list[0] == 'down':
-				print "Downer"
+				intf_down(msg_list)
 			else:
 				print "freakout"
 			session.acknowledge()
