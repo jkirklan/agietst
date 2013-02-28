@@ -9,6 +9,7 @@ import subprocess
 import shlex
 
 def pinger(iadr):
+# This pings the local interface
         command_line = "ping -c 1 " + iadr
         args = shlex.split(command_line)
         try:   
@@ -17,6 +18,7 @@ def pinger(iadr):
         except:
                 print "Couldn't get a ping on ", intf[1]
 def pinger_b(iadr):
+#This pings the remote broker
         command_line = "ping -c 1 " + iadr
         args = shlex.split(command_line)
         try:
@@ -26,6 +28,7 @@ def pinger_b(iadr):
                 print "Couldn't get a ping on ", iadr
 
 def all_interfaces():
+#This returns a list with all active network interfaces
     is_64bits = sys.maxsize > 2**32
     struct_size = 40 if is_64bits else 32
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -49,9 +52,9 @@ def all_interfaces():
 
 
 
-start_config = all_interfaces()
-del start_config[0]
-for intf in start_config:
+start_config = all_interfaces() #set initial value for start_config == to int on init`
+del start_config[0] #remove loopback
+for intf in start_config: 
 	broker = "broker." + intf[0] + ".example.com"
 	intf_name = intf[0]
         intf_ip = intf[1]
