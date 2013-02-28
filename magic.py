@@ -13,18 +13,6 @@ from qpid.messaging import *
 broker_local = "localhost:5672"
 addr_control = "agie_inbound/agie_inbound_control"
 
-def broker_conn():
-# create connection to local broker
-	lb_connection = Connection(broker_local)
-	try:
-		lb_connection.open()
-		session = lb_connection.session()
-		sender = session.sender(addr_control) 
-	except MessagingError,m:
-		print m
-	finally:
-		lb_connection.close()
-
 def pinger(iadr):
 # This pings the local interface
         command_line = "ping -c 1 " + iadr
@@ -41,15 +29,28 @@ def pinger_b(iadr):
         try:
                 subprocess.check_call(args,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
                 print "broker is there on ", iadr
+		return 0
         except:
                 print "Couldn't get a ping on ", iadr
+		return 1
+
 def add_intf(intf):
+	broker_ok = 2
         broker = "broker." + intf[0] + ".example.com"
         intf_name = intf[0]
         intf_ip = intf[1]
         pinger(intf[1])
-        pinger_b(broker)
-        print "send message to avail brokers"	
+        broker_ok = pinger_b(broker)
+	if broker_ok == 0:
+        	print "send message to avail brokers"	
+		msg_content = "up," + intf_name + ',' + intf_ip
+		msg = Message(msg_content)
+		print msg_content
+		sender.send(msg)
+	elif broker_ok == 1:
+		print "oops"
+	else:
+		print "double oops"
 
 def all_interfaces():
 #This returns a list with all active network interfaces
@@ -73,9 +74,18 @@ def all_interfaces():
     return [(namestr[i:i+16].split('\0', 1)[0],
              socket.inet_ntoa(namestr[i+20:i+24]))
             for i in range(0, outbytes, struct_size)]
+#create broker connection and session
+lb_connection = Connection(broker_local)
+try:
+	lb_connection.open()
+	session = lb_connection.session()
+	sender = session.sender(addr_control) 
+except MessagingError,m:
+	print m
+finally:
+	lb_connection.close()
 
-broker_conn()
-start_config = all_interfaces() #set initial value for start_config == to int on init`
+start_config = all_interfaces() #set initial value r start_config == to int on init
 del start_config[0] #remove loopback
 for intf in start_config: 
 	add_intf(intf)
