@@ -57,9 +57,11 @@ def del_intf(diffy):
 	broker = "broker." + intf_name + ".example.com"
 	print "send message to dead brokers"
 	msg_content = "down," + intf_name + ',' + intf_ip
+	print 'dead msg', msg_content
 	msg = Message(msg_content)
 	print msg_content
-	sender.send(msg)
+	rc = sender.send(msg)
+	print 'rc', rc
 	
 def all_interfaces():
 #This returns a list with all active network interfaces
