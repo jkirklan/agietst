@@ -5,10 +5,12 @@ from qpid.messaging import *
 #global vars
 broker_local = "localhost:5672"
 addr_control = "agie_inbound/agie_inbound_control"
+intf_table = []
 
 
 def intf_up(msg_list):
 	print msg_list
+	
 	print 'Uppy '
 
 def intf_down(msg_list):
