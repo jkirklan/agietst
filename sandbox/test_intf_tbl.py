@@ -16,7 +16,7 @@ intf_table.append(foo)
 intf_table.append(foo1)
 intf_table.append(foo2)
 print intf_table
-down = [ iface for iface in intf_table if iface.get('status') != 'up' ]
-up = [ iface for iface in intf_table if iface.get('status') != 'down' ]
+up = [ iface for iface in intf_table if iface.get('status') == 'up' ]
+down = [ iface for iface in intf_table if iface.get('status') == 'down' ]
 print down
 print  up
