@@ -1,20 +1,21 @@
 #!/usr/bin/python
 import sys
+import logging
 from qpid.messaging import *
 
 #global vars
+logging.basicConfig(filename="/tmp/agie.log", level=logging.INFO)
 broker_local = "localhost:5672"
 addr_control = "agie_inbound/agie_inbound_control"
 intf_table = []
-title = ['status', 'intf_name', 'intf_ip']
+title = ['status', 'intf_name', 'intf_ip', 'broker', 'queue']
 
 def intf_up(msg_list,intf_table):
 	tmp_tbl_up = intf_table
-	print 'add starting on ', tmp_tbl_up
+	logging.debug('add starting on %s' % (tmp_tbl_up))
 	tmp_entry = dict(zip(title,msg_list))
-	print 'tmp_entry', tmp_entry
+	logging.info('tmp_entry: %s' % (tmp_entry))
 	intf_tmp = tmp_entry.get('intf_name')
-	print 'intf', intf_tmp
 	exist = [ iface for iface in tmp_tbl_up if iface.get('intf_name') == intf_tmp ]
 	if exist:
 		print "already exists"
@@ -42,29 +43,40 @@ def intf_down(msg_list, intf_table):
 def broker_conn():
 # create connection to local broker
         lb_connection = Connection(broker_local)
-	intf_table = []
         try:
                 lb_connection.open()
                 session = lb_connection.session()
 		receiver = session.receiver("agie_inbound_control")
-		while True:
-			print 'initial intf_table', intf_table
-			message = receiver.fetch()
-			received = message.content
-			print 'received', received
-			msg_list = received.split(',')	
-			if msg_list[0] == 'up':
-				intf_table = intf_up(msg_list, intf_table)
-				print 'up event', intf_table
-			elif msg_list[0] == 'down':
-				intf_table = intf_down(msg_list, intf_table)
-				print 'downer man', intf_table
-			else:
-				print "freakout"
-			session.acknowledge()
+		return receiver
         except MessagingError,m:
                 print m
-        finally:
-                lb_connection.close()
+def intf_change(intf_table):
+	print 'initial intf_table', intf_table
+	message = receiver.fetch()
+	received = message.content
+	print 'received', received
+	msg_list = received.split(',')
+	if msg_list[0] == 'up':
+		intf_table = intf_up(msg_list, intf_table)
+		print 'up event', intf_table
+		return intf_table
+	elif msg_list[0] == 'down':
+		intf_table = intf_down(msg_list, intf_table)
+		print 'downer man', intf_table
+		return intf_table
+	else:  
+		print "freakout"
+	session.acknowledge()
 
-broker_conn()
+#main()
+lb_connection = Connection(broker_local)
+intf_table = []
+try:   
+	lb_connection.open()
+	session = lb_connection.session()
+	receiver = session.receiver("agie_inbound_control")
+except MessagingError,m:
+	print m
+
+while True:
+	intf_table = intf_change(intf_table)

@@ -38,12 +38,12 @@ def add_intf(intf):
 	broker_ok = 2
         intf_name = intf[0]
         intf_ip = intf[1]
-        broker = "broker." + intf_name + ".example.com"
+        broker_name = "broker." + intf_name + ".example.com"
         pinger(intf[1])
-        broker_ok = pinger_b(broker)
+        broker_ok = pinger_b(broker_name)
 	if broker_ok == 0:
         	print "send message to avail brokers"	
-		msg_content = "up," + intf_name + ',' + intf_ip
+		msg_content = "up," + intf_name + ',' + intf_ip + ',' + broker_name + ',' + 'outbound_agie_' + intf_name
 		msg = Message(msg_content)
 		print msg_content
 		sender.send(msg)
@@ -54,9 +54,9 @@ def add_intf(intf):
 
 def del_intf(diffy):
 	intf_name, intf_ip = diffy[0]
-	broker = "broker." + intf_name + ".example.com"
+	broker_name = "broker." + intf_name + ".example.com"
 	print "send message to dead brokers"
-	msg_content = "down," + intf_name + ',' + intf_ip
+	msg_content = "down," + intf_name + ',' + intf_ip + ',' + broker_name + ',' + 'outbound_agie_' + intf_name
 	print 'dead msg', msg_content
 	msg = Message(msg_content)
 	print msg_content
