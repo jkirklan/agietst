@@ -7,6 +7,7 @@ from qpid.messaging import *
 logging.basicConfig(filename="/tmp/agie.log", level=logging.INFO)
 broker_local = "localhost:5672"
 addr_control = "agie_inbound/agie_inbound_control"
+addr_data_src = "agie_inbound_d/agie_inbound_data"
 intf_table = []
 ALTERNATE_EXCHANGE = "amq.direct"; 
 title = ['status', 'intf_name', 'intf_ip', 'broker', 'queue']
@@ -24,13 +25,13 @@ def intf_up(msg_list,intf_table, session):
 		return intf_table
 	else:
 		if tmp_entry['intf_name'] == "eth4":
-			eth4Queue = session.receiver("outbound_agie_eth4; {create:always, node:{x-declare:{auto-delete:true, alternate-exchange:'"+ALTERNATE_EXCHANGE+"'}}}");
+			eth4Queue = session.sender("outbound_agie_eth4; {create:always, node:{x-declare:{auto-delete:true, alternate-exchange:'"+ALTERNATE_EXCHANGE+"'}}}");
 			tmp_tbl_up.append(tmp_entry)
 		elif tmp_entry['intf_name'] == "eth5":
-			eth5Queue = session.receiver("outbound_agie_eth5; {create:always, node:{x-declare:{auto-delete:true, alternate-exchange:'"+ALTERNATE_EXCHANGE+"'}}}");
+			eth5Queue = session.sender("outbound_agie_eth5; {create:always, node:{x-declare:{auto-delete:true, alternate-exchange:'"+ALTERNATE_EXCHANGE+"'}}}");
 			tmp_tbl_up.append(tmp_entry)
 		else:
-			print "major major"
+			print "major major issue"
 		print 'Added inteface on ', msg_list[1]
 		print tmp_tbl_up
 		return tmp_tbl_up
@@ -47,6 +48,8 @@ def intf_down(msg_list, intf_table):
 	print 'returning ', tmp_tbl
 	return tmp_tbl
 
+def data_msg_mover(tgt_queue, addr_data_src):
+	print "hi"
 
 def broker_conn():
 # create connection to local broker
@@ -70,7 +73,7 @@ def intf_change(intf_table):
 		return intf_table
 	elif msg_list[0] == 'down':
 		intf_table = intf_down(msg_list, intf_table)
-		print 'downer man', intf_table
+		print 'down event', intf_table
 		return intf_table
 	else:  
 		print "freakout"
@@ -83,6 +86,7 @@ try:
 	lb_connection.open()
 	session = lb_connection.session()
 	receiver = session.receiver("agie_inbound_control")
+	receiver_d = session.receiver(addr_data_src)
 except MessagingError,m:
 	print m
 
