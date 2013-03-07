@@ -8,9 +8,10 @@ logging.basicConfig(filename="/tmp/agie.log", level=logging.INFO)
 broker_local = "localhost:5672"
 addr_control = "agie_inbound/agie_inbound_control"
 intf_table = []
+ALTERNATE_EXCHANGE = "amq.direct"; 
 title = ['status', 'intf_name', 'intf_ip', 'broker', 'queue']
 
-def intf_up(msg_list,intf_table):
+def intf_up(msg_list,intf_table, session):
 	tmp_tbl_up = intf_table
 	logging.debug('add starting on %s' % (tmp_tbl_up))
 	tmp_entry = dict(zip(title,msg_list))
@@ -22,7 +23,14 @@ def intf_up(msg_list,intf_table):
 		print 'returning', intf_table
 		return intf_table
 	else:
-		tmp_tbl_up.append(tmp_entry)
+		if tmp_entry['intf_name'] == "eth4":
+			eth4Queue = session.receiver("outbound_agie_eth4; {create:always, node:{x-declare:{auto-delete:true, alternate-exchange:'"+ALTERNATE_EXCHANGE+"'}}}");
+			tmp_tbl_up.append(tmp_entry)
+		elif tmp_entry['intf_name'] == "eth5":
+			eth5Queue = session.receiver("outbound_agie_eth5; {create:always, node:{x-declare:{auto-delete:true, alternate-exchange:'"+ALTERNATE_EXCHANGE+"'}}}");
+			tmp_tbl_up.append(tmp_entry)
+		else:
+			print "major major"
 		print 'Added inteface on ', msg_list[1]
 		print tmp_tbl_up
 		return tmp_tbl_up
@@ -57,7 +65,7 @@ def intf_change(intf_table):
 	print 'received', received
 	msg_list = received.split(',')
 	if msg_list[0] == 'up':
-		intf_table = intf_up(msg_list, intf_table)
+		intf_table = intf_up(msg_list, intf_table, session)
 		print 'up event', intf_table
 		return intf_table
 	elif msg_list[0] == 'down':
@@ -80,3 +88,4 @@ except MessagingError,m:
 
 while True:
 	intf_table = intf_change(intf_table)
+	

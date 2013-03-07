@@ -14,7 +14,8 @@ try:
 	lb_connection.open()
 	session = lb_connection.session()
 	sender = session.sender(addr_control)
-	msg_content = "up," + intf_name + ',' + intf_ip
+	broker_name = "broker.eth4.example.com"
+	msg_content = "down," + intf_name + ',' + intf_ip + ',' + broker_name + ',' + 'outbound_agie_' + intf_name
 	msg = Message(msg_content)
 	print msg_content
 	sender.send(msg)
