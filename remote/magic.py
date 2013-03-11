@@ -28,10 +28,10 @@ def pinger_b(iadr):
         args = shlex.split(command_line)
         try:
                 subprocess.check_call(args,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-                print "broker is there on ", iadr
+                print "broker is available on ", iadr
 		return 0
         except:
-                print "Couldn't get a ping on ", iadr
+                print "Couldn't get a ping on broker at ", iadr
 		return 1
 
 def add_intf(intf):
@@ -42,10 +42,10 @@ def add_intf(intf):
         pinger(intf[1])
         broker_ok = pinger_b(broker_name)
 	if broker_ok == 0:
-        	print "send message to avail brokers"	
+        	print "Sending message to avail brokers"	
 		msg_content = "up," + intf_name + ',' + intf_ip + ',' + broker_name + ',' + 'outbound_agie_' + intf_name
 		msg = Message(msg_content)
-		print msg_content
+		#print msg_content
 		sender.send(msg)
 	elif broker_ok == 1:
 		print "oops"
@@ -55,13 +55,13 @@ def add_intf(intf):
 def del_intf(diffy):
 	intf_name, intf_ip = diffy[0]
 	broker_name = "broker." + intf_name + ".example.com"
-	print "send message to dead brokers"
+	print "Sending message about dead broker."
 	msg_content = "down," + intf_name + ',' + intf_ip + ',' + broker_name + ',' + 'outbound_agie_' + intf_name
-	print 'dead msg', msg_content
+	#print 'dead msg', msg_content
 	msg = Message(msg_content)
-	print msg_content
+	#print msg_content
 	rc = sender.send(msg)
-	print 'rc', rc
+	#print 'rc', rc
 	
 def all_interfaces():
 #This returns a list with all active network interfaces
@@ -107,8 +107,8 @@ while True:
 	new_config = all_interfaces()
 	del new_config[0]
 	if start_config == new_config:
-		print "no change"
-		#start_config = new_config
+		print "No config change"
+		# need to add broker ping here for each active interface
 	else:
 		iffy = set(new_config)
 		diffy = []
