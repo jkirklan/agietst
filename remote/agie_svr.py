@@ -84,44 +84,40 @@ def data_msg_mover(intf_table, receiver_d, last_intf, eth4Sender, eth5Sender):
 	intf_names_up = []
         try: 
 		message = receiver_d.fetch(timeout=3)
-		session.acknowledge()
 		count = len(intf_table)
 		count1 = len(intf_table)
 		for count in intf_table:
 			intf_names_up.append(count['intf_name'])
 		print 'in mover up:', intf_names_up
-        	#print "moving message:", message
-	
+        	print "moving message:", message
 		print 'last is %s and count is %i' % (last_intf, count1)
-	
+		session.acknowledge()
 		if last_intf == 'eth4' and count1 == 2:
 			print 'hia'
 			eth5Sender.send(message)
-			session.acknowledge()
 			last_intf = 'eth5'
 		elif last_intf == 'eth5' and count1 == 2:
                 	eth4Sender.send(message)
-                	session.acknowledge()
                 	last_intf = 'eth4'
 		elif last_intf == 'eth4' and count1 == 1:
                 	eth4Sender.send(message)
-                	session.acknowledge()
                 	last_intf = 'eth4'
         	elif last_intf == 'eth5' and count1 == 1:
                 	eth5Sender.send(message)
-                	session.acknowledge()
                 	last_intf = 'eth5'
 		else:
 			print 'major error in data_msg_mover'
+		rc = session.acknowledge()
+		print 'ack', rc
         except Empty:
                 print 'No message'
         except MessagingError,m:
                 print m
-        else:
-                received = message.content	
+        finally:
+                #received = message.content	
+		session.acknowledge()
        	if received:
 		print 'moved', received
-	session.acknowledge()
 	return last_intf
 
 def broker_conn():
@@ -135,7 +131,7 @@ def broker_conn():
         except MessagingError,m:
                 print m
 def intf_change(intf_table):
-	print 'initial intf_table', intf_table
+	#print 'initial intf_table', intf_table
 	try:
 		message = receiver.fetch(timeout=1)
 		received = message.content 
@@ -166,7 +162,7 @@ try:
 	lb_connection.open()
 	session = lb_connection.session()
 	receiver = session.receiver("agie_inbound_control")
-	receiver_d = session.receiver(addr_data_src)
+	receiver_d = session.receiver("agie_inbound_data")
 	#after up/down then send and receive data messages.
 except MessagingError,m:
 	print m
