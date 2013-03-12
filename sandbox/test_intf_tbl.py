@@ -8,6 +8,7 @@ foo = dict(zip(title,d))
 foo1 = dict(zip(title,c))
 foo2 = dict(zip(title,e))
 intf_table = []
+intf_name_tbl = []
 search = 'eth4'
 #def thebest():
 #  entries = [d['key2'] for d in intf_table if d['key1']]
@@ -20,3 +21,8 @@ up = [ iface for iface in intf_table if iface.get('status') == 'up' ]
 down = [ iface for iface in intf_table if iface.get('status') == 'down' ]
 print down
 print  up
+count = len(up)
+for count in up:
+	intf_name_tbl.append(count['intf_name'])
+print intf_name_tbl
+

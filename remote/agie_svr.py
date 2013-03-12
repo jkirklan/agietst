@@ -10,20 +10,26 @@ addr_control = "agie_inbound/agie_inbound_control"
 addr_data_src = "agie_inbound_d/agie_inbound_data"
 net1_q = "agie_data_net1"
 net2_q = "agie_data_net2"
+last_intf = 'eth4'
 eth4Queue = None
 eth5Queue = None
-qpid_opt = "; {create:always, node:{x-declare:{auto-delete:true, alternate-exchange: 'amq.direct'}}}"
+eth4Sender = None
+eth5Sender = None
+qpid_opt = "; {create:always, node:{x-declare:{auto-delete:true, alternate-exchange: 'agie_alt'}}}"
 net1_con = '"' + net1_q + qpid_opt + '"'
 intf_table = []
 title = ['status', 'intf_name', 'intf_ip', 'broker', 'queue']
 
 def intf_up(msg_list,intf_table, session):
 	tmp_tbl_up = intf_table
-	logging.debug('add starting on %s' % (tmp_tbl_up))
+	print 'add starting on %s' % (tmp_tbl_up)
 	tmp_entry = dict(zip(title,msg_list))
-	logging.info('tmp_entry: %s' % (tmp_entry))
+	print 'tmp_entry: %s' % (tmp_entry)
 	intf_tmp = tmp_entry.get('intf_name')
-	exist = [ iface for iface in tmp_tbl_up if iface.get('intf_name') == intf_tmp ]
+	if tmp_tbl_up != None:
+		exist = [ iface for iface in tmp_tbl_up if iface.get('intf_name') == intf_tmp ]
+	else:
+		exist = None
 	if exist:
 		print "Interface already exists."
 		#print 'returning', intf_table
@@ -31,12 +37,22 @@ def intf_up(msg_list,intf_table, session):
 	else:
 		if tmp_entry['intf_name'] == "eth4":
 			global eth4Queue
-			eth4Queue = session.receiver("agie_data_net1; {create:always, node:{x-declare:{auto-delete:true, alternate-exchange: 'amq.direct'}}}")
-			tmp_tbl_up.append(tmp_entry)
+			global eth4Sender
+			eth4Queue = session.receiver("agie_data_net1; {create:always, node:{x-declare:{auto-delete:true, alternate-exchange: 'agie_alt'}}}")
+			eth4Sender = session.sender("agie_data_net1; {create:always, node:{x-declare:{auto-delete:true, alternate-exchange: 'agie_alt'}}}")
+			if tmp_tbl_up != None:
+				tmp_tbl_up.append(tmp_entry)
+			else:
+				tmp_tbl_up=[tmp_entry]
 		elif tmp_entry['intf_name'] == "eth5":
 			global eth5Queue
-			eth5Queue = session.receiver("agie_data_net2; {create:always, node:{x-declare:{auto-delete:true, alternate-exchange: 'amq.direct'}}}")
-			tmp_tbl_up.append(tmp_entry)
+			global eth5Sender
+			eth5Queue = session.receiver("agie_data_net2; {create:always, node:{x-declare:{auto-delete:true, alternate-exchange: 'agie_alt'}}}")
+			eth5Sender = session.sender("agie_data_net2; {create:always, node:{x-declare:{auto-delete:true, alternate-exchange: 'agie_alt'}}}")
+			if tmp_tbl_up != None:
+				tmp_tbl_up.append(tmp_entry)
+			else:
+				tmp_tbl_up=[tmp_entry]
 		else:
 			print "major major issue"
 		print 'Added inteface on ', msg_list[1]
@@ -50,8 +66,10 @@ def intf_down(msg_list, intf_table, eth4Queue, eth5Queue):
 	intf_to_rm = tmp_entry['intf_name']	
 	if intf_to_rm == 'eth4':
 		eth4Queue.close()
+		eth4Sender.close()
 	elif intf_to_rm == 'eth5':
 		eth5Queue.close()
+		eth5Sender.close()
 	else:
 		print "queue close error"
 	print 'Deteched down network.  Removing interface:', intf_to_rm
@@ -61,13 +79,50 @@ def intf_down(msg_list, intf_table, eth4Queue, eth5Queue):
 	#print 'returning ', tmp_tbl
 	return tmp_tbl
 
-def data_msg_mover(receiver_d, eth4Queue, eth5Queue):
-        message = receiver.fetch()
-        received = message.content
-        print "moving message:", message
-        sender2.send(message)
-        print 'moved', received
-        session.acknowledge()
+def data_msg_mover(intf_table, receiver_d, last_intf, eth4Sender, eth5Sender):
+	received = None
+	intf_names_up = []
+        try: 
+		message = receiver_d.fetch(timeout=3)
+		session.acknowledge()
+		count = len(intf_table)
+		count1 = len(intf_table)
+		for count in intf_table:
+			intf_names_up.append(count['intf_name'])
+		print 'in mover up:', intf_names_up
+        	#print "moving message:", message
+	
+		print 'last is %s and count is %i' % (last_intf, count1)
+	
+		if last_intf == 'eth4' and count1 == 2:
+			print 'hia'
+			eth5Sender.send(message)
+			session.acknowledge()
+			last_intf = 'eth5'
+		elif last_intf == 'eth5' and count1 == 2:
+                	eth4Sender.send(message)
+                	session.acknowledge()
+                	last_intf = 'eth4'
+		elif last_intf == 'eth4' and count1 == 1:
+                	eth4Sender.send(message)
+                	session.acknowledge()
+                	last_intf = 'eth4'
+        	elif last_intf == 'eth5' and count1 == 1:
+                	eth5Sender.send(message)
+                	session.acknowledge()
+                	last_intf = 'eth5'
+		else:
+			print 'major error in data_msg_mover'
+        except Empty:
+                print 'No message'
+        except MessagingError,m:
+                print m
+        else:
+                received = message.content	
+       	if received:
+		print 'moved', received
+	session.acknowledge()
+	return last_intf
 
 def broker_conn():
 # create connection to local broker
@@ -80,24 +135,30 @@ def broker_conn():
         except MessagingError,m:
                 print m
 def intf_change(intf_table):
-	#print 'initial intf_table', intf_table
-	message = receiver.fetch()
-	received = message.content
-	#print 'received', received
-	msg_list = received.split(',')
-	if msg_list[0] == 'up':
-		intf_table = intf_up(msg_list, intf_table, session)
-		print 'Up event received:', intf_table
-		session.acknowledge()
+	print 'initial intf_table', intf_table
+	try:
+		message = receiver.fetch(timeout=1)
+		received = message.content 
+		msg_list = received.split(',')
+		if msg_list[0] == 'up':
+			intf_table = intf_up(msg_list, intf_table, session)
+			print 'Up event received:', intf_table
+			session.acknowledge()
+			return intf_table
+		elif msg_list[0] == 'down':
+			intf_table = intf_down(msg_list, intf_table, eth4Queue, eth5Queue)
+			print 'Down event received:', intf_table
+			session.acknowledge()	
+			return intf_table
+		else:  
+			print "freakout"
+        except Empty:
+                print 'no change'
 		return intf_table
-	elif msg_list[0] == 'down':
-		intf_table = intf_down(msg_list, intf_table, eth4Queue, eth5Queue)
-		print 'Down event received:', intf_table
-		session.acknowledge()	
-		return intf_table
-	else:  
-		print "freakout"
-
+        except MessagingError,m:
+                print m
+        else:
+               print received 
 #main()
 lb_connection = Connection(broker_local)
 intf_table = []
@@ -106,11 +167,12 @@ try:
 	session = lb_connection.session()
 	receiver = session.receiver("agie_inbound_control")
 	receiver_d = session.receiver(addr_data_src)
-	#sender_4 = session.sender(
 	#after up/down then send and receive data messages.
 except MessagingError,m:
 	print m
 
 while True:
 	intf_table = intf_change(intf_table)
-	
+	print '1'
+	last_intf = data_msg_mover(intf_table, receiver_d, last_intf, eth4Sender, eth5Sender)
+	print '2'
