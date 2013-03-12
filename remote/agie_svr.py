@@ -82,15 +82,16 @@ def intf_down(msg_list, intf_table, eth4Queue, eth5Queue):
 def data_msg_mover(intf_table, receiver_d, last_intf, eth4Sender, eth5Sender):
 	received = None
 	intf_names_up = []
-	if intf_table == None:
-		return	
+	print 'last_intf:', last_intf
+	if intf_table == []:
+		return last_intf
         try: 
 		message = receiver_d.fetch(timeout=3)
 		count = len(intf_table)
 		count1 = len(intf_table)
 		for count in intf_table:
 			intf_names_up.append(count['intf_name'])
-		print 'in mover up:', intf_names_up
+		print 'Networks available to accept messages:', intf_names_up
         	print "moving message:", message
 		print 'last is %s and count is %i' % (last_intf, count1)
 		session.acknowledge()
@@ -115,9 +116,9 @@ def data_msg_mover(intf_table, receiver_d, last_intf, eth4Sender, eth5Sender):
                 print 'No message'
         except MessagingError,m:
                 print m
-        finally:
+        #finally:
                 #received = message.content	
-		session.acknowledge()
+	#	session.acknowledge()
        	if received:
 		print 'moved', received
 	return last_intf
@@ -133,7 +134,7 @@ def broker_conn():
         except MessagingError,m:
                 print m
 def intf_change(intf_table):
-	print 'initial intf_table', intf_table
+	#print 'initial intf_table', intf_table
 	#BUG hole here.   If magic starts first intf_table will stay []
 	try:
 		message = receiver.fetch(timeout=1)
