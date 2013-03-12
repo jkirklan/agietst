@@ -10,3 +10,4 @@ qpid-config --durable bind agie_alt agie_inbound_data agie_data_net1
 qpid-config --durable bind agie_alt agie_inbound_data agie_data_net2
 qpid-config --durable add queue app1
 qpid-config --durable add queue app2
+qpid-config --durable bind agie_inbound_d  agie_inbound_data app1

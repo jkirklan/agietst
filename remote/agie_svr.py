@@ -79,14 +79,17 @@ def intf_down(msg_list, intf_table, eth4Queue, eth5Queue):
 	#print 'returning ', tmp_tbl
 	return tmp_tbl
 
-def data_msg_mover(intf_table, receiver_d, last_intf, eth4Sender, eth5Sender):
+def data_msg_mover(intf_table, sender_local, receiver_d, last_intf, eth4Sender, eth5Sender):
 	received = None
 	intf_names_up = []
-	print 'last_intf:', last_intf
+	#print 'last_intf:', last_intf
 	if intf_table == []:
+		print 'No available networks'
 		return last_intf
         try: 
 		message = receiver_d.fetch(timeout=3)
+                received = message.content	
+		subject = message.subject
 		count = len(intf_table)
 		count1 = len(intf_table)
 		for count in intf_table:
@@ -94,9 +97,14 @@ def data_msg_mover(intf_table, receiver_d, last_intf, eth4Sender, eth5Sender):
 		print 'Networks available to accept messages:', intf_names_up
         	print "moving message:", message
 		print 'last is %s and count is %i' % (last_intf, count1)
-		session.acknowledge()
-		if last_intf == 'eth4' and count1 == 2:
-			print 'hia'
+		if subject == 'app1':
+			message.subject = 'app1'
+			print 'moving', message.subject, message.content
+			sender_app1.send(message)	
+		elif subject == 'app2':
+			message.subject = 'app2'
+			sender_local.send(message)
+		elif last_intf == 'eth4' and count1 == 2:
 			eth5Sender.send(message)
 			last_intf = 'eth5'
 		elif last_intf == 'eth5' and count1 == 2:
@@ -110,14 +118,12 @@ def data_msg_mover(intf_table, receiver_d, last_intf, eth4Sender, eth5Sender):
                 	last_intf = 'eth5'
 		else:
 			print 'major error in data_msg_mover'
-		rc = session.acknowledge()
-		print 'ack', rc
+		session.acknowledge()
         except Empty:
                 print 'No message'
         except MessagingError,m:
                 print m
         #finally:
-                #received = message.content	
 	#	session.acknowledge()
        	if received:
 		print 'moved', received
@@ -166,13 +172,15 @@ try:
 	lb_connection.open()
 	session = lb_connection.session()
 	receiver = session.receiver("agie_inbound_control")
+	sender_local = session.sender('amq.direct')
+	sender_app1 = session.sender('app1')
 	receiver_d = session.receiver("agie_inbound_data")
 	#after up/down then send and receive data messages.
 except MessagingError,m:
 	print m
 
 while True:
+	print 'Checking for control message actions'
 	intf_table = intf_change(intf_table)
-	print '1'
-	last_intf = data_msg_mover(intf_table, receiver_d, last_intf, eth4Sender, eth5Sender)
-	print '2'
+	print 'Checking for data message actions'
+	last_intf = data_msg_mover(intf_table, sender_local, receiver_d, last_intf, eth4Sender, eth5Sender)
