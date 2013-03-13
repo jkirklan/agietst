@@ -1,3 +1,5 @@
+#!/usr/bin/bash
+PATH=$PATH:/usr/bin
 qpid-config --durable add queue agie_inbound_control
 qpid-config --durable add queue agie_inbound_data
 qpid-config --durable add exchange direct agie_inbound -a localhost:5672
