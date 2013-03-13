@@ -1,6 +1,7 @@
 #!/usr/bin/python
 import sys
 import logging
+import json
 from qpid.messaging import *
 
 #global vars
@@ -110,10 +111,10 @@ def data_msg_mover(intf_table, sender_local, receiver_d, last_intf, eth4Sender, 
 		elif last_intf == 'eth5' and count1 == 2:
                 	eth4Sender.send(message)
                 	last_intf = 'eth4'
-		elif last_intf == 'eth4' and count1 == 1:
+		elif intf_names_up[0] == 'eth4' and count1 == 1:
                 	eth4Sender.send(message)
                 	last_intf = 'eth4'
-        	elif last_intf == 'eth5' and count1 == 1:
+        	elif intf_names_up[0] == 'eth5' and count1 == 1:
                 	eth5Sender.send(message)
                 	last_intf = 'eth5'
 		else:
