@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script type="text/javascript" src="js/jquery-1.8.3.js"></script>
+<script type="text/javascript">
+function test_poll() {
+  setTimeout(function() {
+    console.log("Test polling");
+    test_poll();
+  }, 1000);
+}
+
+$(document).ready(function() {
+  test_poll();
+});
+</script>
+<meta charset="UTF-8"/>
+<title>Boeing AMN - Polling tester</title>
+</head>
+<body>
+<div style="position: absolute; top: 50px; left: 50px;">
+</div>
+</body>
+</html>
+
