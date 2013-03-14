@@ -1,0 +1,8 @@
+Things to implement:
+1. Better comments
+2. Add push of outbound messages to BOS from remote agie svr via their designated interface transport queue.
+3. Create the BOS (Back Office Server) AGIE implentation.  It will include the following:
+    A. Master queue per associated remote aircraft.
+    B. Child transport queues for each active network transport to the remote aircraft.
+    C.
+
