@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script type="text/javascript" src="js/jquery-1.8.3.js"></script>
+<script type="text/javascript" src="js/canvasapp.js"></script>
+<script type="text/javascript">
+$(document).ready(function() {
+  var planeTracker = new PlaneTracker(document, "images/sea-chart-with-grid.jpg", "canvasOne");
+  $("#controller-button").click(function(evt){
+    planeTracker.toggle();
+  });
+  planeTracker.register();
+});
+</script>
+<meta charset="UTF-8">
+<title>Seattle/Tacoma(SEA) Airport Chart</title>
+</head>
+<body>
+<div style="position: absolute; top: 5px; left: 5px;">
+<canvas id="canvasOne" width="413" height="634">
+Your browser does not support HTML5 canvas.
+</canvas>
+</div>
+<div id="controller" style="position: absolute; top: 5px; left: 423px;">
+<input id="controller-button" type="button" name="toggle" value="Toggle"/>
+</div>
+</body>
+</html>

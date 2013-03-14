@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script type="text/javascript" src="js/jquery-1.8.3.js"></script>
+<script type="text/javascript" src="js/message_seeder.js"></script>
+<script type="text/javascript">
+$(document).ready(function() {
+  var resultContainer = $("#results ul");
+  var messageSeeder = new MessageSeeder(resultContainer);
+  $("#dataform-button").click(function(evt) {
+    var x = $("#dataform-x").val();
+    var y = $("#dataform-y").val();
+    messageSeeder.sendMessage(x, y);
+  });
+});
+</script>
+<meta charset="UTF-8">
+<title>Message Seeder</title>
+</head>
+<body>
+<div id="title">
+<h1>Message Seeder</h1>
+</div>
+<div id="dataform">
+<span class="inputdata">X: <input type="text" id="dataform-x" /></span>
+<span class="inputdata">Y: <input type="text" id="dataform-y" /></span>
+<span class="databutton"><input type="button" name="send" value="Send" id="dataform-button"/></span>
+</div>
+<div id="results"><ul></ul></div>
+</body>
+</html>

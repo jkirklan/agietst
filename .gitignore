@@ -33,3 +33,10 @@ nosetests.xml
 .mr.developer.cfg
 .project
 .pydevproject
+
+# Java Developer Ignores
+.classpath
+.settings/
+target/
+lib/*.jar
+
