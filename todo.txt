@@ -5,4 +5,13 @@ Things to implement:
     A. Master queue per associated remote aircraft.
     B. Child transport queues for each active network transport to the remote aircraft.
     C.
+4. Add function to send message to BOS when networks come up or down.   This
+will then allow the BOS to create tmp queues for outbound messages by net.
+The remote agie svr can then reach back to the bos broker and pull messages
+over a given net.  When a net drops the outbound transport queue is deleted.
+All transient queues should have alt exchange that delivers them back to the
+inbound data message queue for rerouting.   We could also split the master
+data queues in theory. 
+5. Add option to re-evaluate queued messages in live outbound queue for better
+paths.  This will be needed in both remote and BOS.   
 
