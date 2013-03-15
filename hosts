@@ -1,7 +1,6 @@
 127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
 ::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
-10.211.55.5 remote.eth5.example.com mrg2a
-10.37.129.4 remote.eth4.example.com mrg2b
-10.211.55.4 bos.eth4.example.com mrg1a
-10.37.129.3 bos.eth5.example.com mrg1b
-
+10.211.55.5 broker.eth5.example.com mrg2a remote.eth5.example.com
+10.37.129.4 broker.eth4.example.com mrg2b remote.eth4.example.com
+10.211.55.4 client.eth4.example.com mrg1a bos.eth4.example.com
+10.37.129.3 client.eth5.example.com mrg1b bos.eth5.example.com
