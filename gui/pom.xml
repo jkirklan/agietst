@@ -4,7 +4,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.redhat.agie</groupId>
   <artifactId>agie</artifactId>
-  <version>0.0.1</version>
+  <version>0.0.2</version>
   <packaging>pom</packaging>
   <url>http://www.redhat.com</url>
   <properties>
@@ -27,7 +27,7 @@
       <dependency>
         <groupId>com.redhat.agie</groupId>
         <artifactId>agie-services</artifactId>
-        <version>0.0.1</version>
+        <version>${project.version}</version>
         <type>war</type>
       </dependency>
       <dependency>

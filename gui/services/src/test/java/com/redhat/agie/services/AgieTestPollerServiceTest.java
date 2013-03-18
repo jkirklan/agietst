@@ -9,6 +9,7 @@ import java.net.URL;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -65,9 +66,9 @@ public class AgieTestPollerServiceTest {
   @Test
   public void execute() throws Exception {
     String baseUrl = deploymentUrl.toString() + "rest/";
-    //seedMessages(baseUrl);
     RegisterBuiltin.register(ResteasyProviderFactory.getInstance());
     AgieTestPollerServiceInterface service = ProxyFactory.create(AgieTestPollerServiceInterface.class, baseUrl);
+    seedMessages(service);
     ClientResponse<String> regResponse = service.register();
     assertTrue(regResponse.getStatus() == 200);
     String id = regResponse.getEntity();
@@ -84,6 +85,11 @@ public class AgieTestPollerServiceTest {
     assertTrue(Float.toString(result.getMessages().get(0).getY()), result.getMessages().get(0).getY() > 1.0f);
   }
 
+  private void seedMessages(AgieTestPollerServiceInterface service) {
+    service.pushMessage(new AgieTestLocationUpdate(0, 0));
+    service.pushMessage(new AgieTestLocationUpdate(0, 2));
+  }
+
   @Path("/agie-test-poller")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
@@ -94,5 +100,8 @@ public class AgieTestPollerServiceTest {
     @GET
     @Path("/{id}")
     public ClientResponse<AgieTestPollResult> execute(@PathParam("id") String id);
+    @Path("/push")
+    @POST
+    public AgieTestLocationUpdate pushMessage(AgieTestLocationUpdate loc);
   }
 }

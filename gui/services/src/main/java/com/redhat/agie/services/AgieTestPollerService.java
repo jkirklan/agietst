@@ -9,9 +9,12 @@ import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
 import javax.jms.MessageConsumer;
+import javax.jms.MessageProducer;
 import javax.jms.Session;
+import javax.jms.TextMessage;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -44,6 +47,29 @@ public class AgieTestPollerService {
     String id = repository.genId();
     repository.store(id, lastLocation);
     return new ServiceResponse(id);
+  }
+  
+  @Path("/push")
+  @POST
+  public AgieTestLocationUpdate pushMessage(AgieTestLocationUpdate loc) {
+    try {
+      ConnectionFactory connFactory = connectionManager.lookupConnectionFactory();
+      Destination dest = connectionManager.lookupDestination("directExchange");
+      Connection conn = connFactory.createConnection();
+      try {
+        conn.start();
+        Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+        MessageProducer prod = sess.createProducer(dest);
+        BytesMessage msg = sess.createBytesMessage();
+        msg.writeBytes(loc.toJson().getBytes());
+        prod.send(msg);
+      } finally {
+        conn.close();
+      }
+    } catch(Exception e) {
+      logger.error(e.getMessage());
+    }
+    return loc;
   }
 
   @GET

@@ -43,6 +43,9 @@ PlaneTracker.prototype = {
       for(var i = 0; i < data.messages.length; i++) {
         var curLoc = data.messages[i];
         planeTracker.lastLocation = curLoc;
+        var chartImage = new Image();
+        chartImage.src = planeTracker.baseImage;
+        planeTracker.context.drawImage(chartImage, 0, 0);
         planeTracker.drawRect(curLoc.x, curLoc.y, 20, 20);
       }
     });
