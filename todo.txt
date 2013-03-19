@@ -14,4 +14,5 @@ inbound data message queue for rerouting.   We could also split the master
 data queues in theory. 
 5. Add option to re-evaluate queued messages in live outbound queue for better
 paths.  This will be needed in both remote and BOS.   
+6. Switch from direct to topics
 
